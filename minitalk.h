@@ -19,6 +19,6 @@
 # include "libft/libft.h"
 # include "ft_printf/ft_printf.h"
 
-void sig_handler(int signal, siginfo_t *info, void *context);
+
 
 #endif

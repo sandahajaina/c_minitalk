@@ -16,97 +16,79 @@
 #include <string.h>
 #include <unistd.h>
 
-volatile sig_atomic_t	ack_received = 0;
-volatile sig_atomic_t	msg_received = 0;
+volatile sig_atomic_t	sig_received = 0;
 
-void	ack_handler(int signal)
+void	sig_received_handler(int signal)
 {
-	ack_received = 1;
+	if (signal == SIGUSR1)
+	{
+		sig_received = 1;
+	}
+	else if (signal == SIGUSR2)
+	{
+		sig_received = 2;
+	}
 }
 
-void	msg_handler(int signal)
+void	send_char(pid_t server_pid, char c)
 {
-	msg_received = 1;
+	int	bit;
+
+	bit = 7;
+	while (bit >= 0)
+	{
+		sig_received = 0;
+		if (c & (1 << bit))
+			kill(server_pid, SIGUSR1);
+		else
+			kill(server_pid, SIGUSR2);
+		while (sig_received != 1)
+		{
+			usleep(100);
+		}
+		bit--;
+	}
 }
 
 void	send_signal(int server_pid, char *message)
 {
 	int	i;
-	int	bit;
 
-	i = 0;
-	while (message[i] != '\0')
-	{
-		bit = 7;
-		while (bit >= 0)
-		{
-			ack_received = 0;
-			if (message[i] & (1 << bit))
-			{
-				kill(server_pid, SIGUSR1);
-			}
-			else
-			{
-				kill(server_pid, SIGUSR2);
-			}
-			while (!ack_received)
-			{
-				usleep(100); // Wait for acknowledgment
-			}
-			bit--;
-		}
-		i++;
-	}
-	// Send null character to signal end of message
-	bit = 7;
-	while (bit >= 0)
-	{
-		ack_received = 0;
-		kill(server_pid, SIGUSR2);
-		while (!ack_received)
-		{
-			usleep(100); // Wait for acknowledgment
-		}
-		bit--;
-	}
+	i = -1;
+	while (message[++i])
+		send_char(server_pid, message[i]);
+	send_char(server_pid, '\0');
 }
 
 int	main(int argc, char *argv[])
 {
 	pid_t				server_pid;
 	char				*message;
-	struct sigaction	ack_action;
-	struct sigaction	msg_action;
+	struct sigaction	action;
 
 	if (argc != 3)
 	{
-		fprintf(stderr, "Usage: %s <server_pid> <message>\n", argv[0]);
+		printf("Usage: %s <server_pid> <message>\n", argv[0]);
 		return (1);
 	}
+
 	server_pid = (pid_t)atoi(argv[1]);
 	message = argv[2];
-	ack_action.sa_handler = &ack_handler;
-	sigemptyset(&ack_action.sa_mask);
-	ack_action.sa_flags = 0;
-	if (sigaction(SIGUSR1, &ack_action, NULL) == -1)
-	{
-		perror("sigaction");
-		return (1);
-	}
-	msg_action.sa_handler = &msg_handler;
-	sigemptyset(&msg_action.sa_mask);
-	msg_action.sa_flags = 0;
-	if (sigaction(SIGUSR2, &msg_action, NULL) == -1)
-	{
-		perror("sigaction");
-		return (1);
-	}
+
+	action.sa_handler = &sig_received_handler;
+	sigemptyset(&action.sa_mask);
+	action.sa_flags = 0;
+
+	sigaction(SIGUSR1, &action, NULL);
+	sigaction(SIGUSR2, &action, NULL);
+
 	send_signal(server_pid, message);
-	// Wait for the message received acknowledgment from the server
-	while (!msg_received)
+
+	while (sig_received != 2)
 	{
 		pause();
 	}
+	
 	printf("Message reçu\n");
 	return (0);
 }
