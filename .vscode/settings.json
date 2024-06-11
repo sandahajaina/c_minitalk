@@ -2,7 +2,7 @@
     "files.associations": {
         "stdlib.h": "c",
         "minitalk.h": "c",
-        "ft_printf.h": "c",
+        "ft_printf": "c",
         "libft.h": "c",
         "unistd.h": "c",
         "string.h": "c"

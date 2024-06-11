@@ -10,39 +10,29 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <signal.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
+#include "minitalk.h"
 
-volatile sig_atomic_t	sig_received = 0;
+volatile sig_atomic_t	g_sig_received = 0;
 
-void	sig_received_handler(int signal)
+static void	sig_received_handler(int signal)
 {
-	if (signal == SIGUSR1)
-	{
-		sig_received = 1;
-	}
-	else if (signal == SIGUSR2)
-	{
-		sig_received = 2;
-	}
+	(void) signal;
+	g_sig_received = 1;
 }
 
-void	send_char(pid_t server_pid, char c)
+static void	send_char(pid_t server_pid, char c)
 {
 	int	bit;
 
 	bit = 7;
 	while (bit >= 0)
 	{
-		sig_received = 0;
+		g_sig_received = 0;
 		if (c & (1 << bit))
 			kill(server_pid, SIGUSR1);
 		else
 			kill(server_pid, SIGUSR2);
-		while (sig_received != 1)
+		while (g_sig_received != 1)
 		{
 			usleep(100);
 		}
@@ -50,7 +40,7 @@ void	send_char(pid_t server_pid, char c)
 	}
 }
 
-void	send_signal(int server_pid, char *message)
+static void	send_signal(int server_pid, char *message)
 {
 	int	i;
 
@@ -68,27 +58,16 @@ int	main(int argc, char *argv[])
 
 	if (argc != 3)
 	{
-		printf("Usage: %s <server_pid> <message>\n", argv[0]);
+		ft_printf("Usage: %s <server_pid> <message>\n", argv[0]);
 		return (1);
 	}
-
 	server_pid = (pid_t)atoi(argv[1]);
 	message = argv[2];
-
 	action.sa_handler = &sig_received_handler;
 	sigemptyset(&action.sa_mask);
 	action.sa_flags = 0;
-
 	sigaction(SIGUSR1, &action, NULL);
 	sigaction(SIGUSR2, &action, NULL);
-
 	send_signal(server_pid, message);
-
-	while (sig_received != 2)
-	{
-		pause();
-	}
-	
-	printf("Message reçu\n");
 	return (0);
 }

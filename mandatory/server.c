@@ -11,28 +11,30 @@
 /* ************************************************************************** */
 
 #include "minitalk.h"
-#include <stdio.h>
 
 void	print_list(t_list *lst)
 {
 	t_list	*temp;
 
 	temp = lst;
+	ft_printf("New message: ");
 	while (temp)
 	{
-		printf("%c", *(char *)(temp->content));
+		ft_printf("%c", *(char *)(temp->content));
 		temp = temp->next;
 	}
+	ft_printf("\n");
 }
 
-void	sig_handler(int signal, siginfo_t *info, void *context)
+static void	sig_handler(int signal, siginfo_t *info, void *context)
 {
 	static t_list			*str = NULL;
 	static unsigned char	c = 0;
 	static int				bit = 7;
-	char					*char_node;
+	char					*char_ptr;
 	t_list					*new_node;
 
+	(void) context;
 	if (signal == SIGUSR1)
 		c |= (1 << bit);
 	bit--;
@@ -41,13 +43,11 @@ void	sig_handler(int signal, siginfo_t *info, void *context)
 		if (c == '\0')
 		{
 			print_list(str);
-			printf("\n");
 			ft_lstclear(&str, free);
-			kill(info->si_pid, SIGUSR2);
 		}
-		char_node = malloc(sizeof(char));
-		*char_node = c;
-		new_node = ft_lstnew(char_node);
+		char_ptr = malloc(sizeof(char));
+		*char_ptr = c;
+		new_node = ft_lstnew(char_ptr);
 		ft_lstadd_back(&str, new_node);
 		c = 0;
 		bit = 7;
@@ -59,7 +59,7 @@ int	main(void)
 {
 	struct sigaction	action;
 
-	printf("Server PID: %d\n", getpid());
+	ft_printf("Server PID: <%d>\n", getpid());
 	action.sa_sigaction = &sig_handler;
 	sigemptyset(&action.sa_mask);
 	action.sa_flags = SA_SIGINFO;
