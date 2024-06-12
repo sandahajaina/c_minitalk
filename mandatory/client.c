@@ -16,7 +16,7 @@ volatile sig_atomic_t	g_sig_received = 0;
 
 static void	sig_received_handler(int signal)
 {
-	(void) signal;
+	(void)signal;
 	g_sig_received = 1;
 }
 

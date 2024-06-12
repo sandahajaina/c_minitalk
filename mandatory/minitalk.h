@@ -19,6 +19,6 @@
 # include "../libft/libft.h"
 # include "../ft_printf/ft_printf.h"
 
-void	print_list(t_list *lst);
+void	print_free_list(t_list **lst);
 
 #endif

@@ -5,8 +5,8 @@ NAME = minitalk
 $(NAME) : 
 		@cd libft && make bonus
 		@cd ft_printf && make
-		$(CC) $(CFLAGS) mandatory/server.c libft/libft.a ft_printf/libftft_printf.a -o server
-		$(CC) $(CFLAGS) mandatory/client.c ft_printf/libftft_printf.a -o client
+		$(CC) $(CFLAGS) mandatory/server.c libft/libft.a ft_printf/libftft_printf.a -g -o server
+		$(CC) $(CFLAGS) mandatory/client.c ft_printf/libftft_printf.a -g -o client
 
 all : $(NAME)
 

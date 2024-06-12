@@ -12,17 +12,18 @@
 
 #include "minitalk.h"
 
-void	print_list(t_list *lst)
+void	print_free_list(t_list **lst)
 {
 	t_list	*temp;
 
-	temp = lst;
+	temp = *lst;
 	ft_printf("New message: ");
 	while (temp)
 	{
 		ft_printf("%c", *(char *)(temp->content));
 		temp = temp->next;
 	}
+	ft_lstclear(lst, free);
 	ft_printf("\n");
 }
 
@@ -34,21 +35,21 @@ static void	sig_handler(int signal, siginfo_t *info, void *context)
 	char					*char_ptr;
 	t_list					*new_node;
 
-	(void) context;
+	(void)context;
 	if (signal == SIGUSR1)
 		c |= (1 << bit);
 	bit--;
 	if (bit < 0)
 	{
 		if (c == '\0')
+			print_free_list(&str);
+		else
 		{
-			print_list(str);
-			ft_lstclear(&str, free);
+			char_ptr = malloc(sizeof(char));
+			*char_ptr = c;
+			new_node = ft_lstnew(char_ptr);
+			ft_lstadd_back(&str, new_node);
 		}
-		char_ptr = malloc(sizeof(char));
-		*char_ptr = c;
-		new_node = ft_lstnew(char_ptr);
-		ft_lstadd_back(&str, new_node);
 		c = 0;
 		bit = 7;
 	}
