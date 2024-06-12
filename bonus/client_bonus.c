@@ -1,23 +1,33 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   client.c                                           :+:      :+:    :+:   */
+/*   client_bonus.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: sranaivo <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/06 10:30:53 by sranaivo          #+#    #+#             */
-/*   Updated: 2024/06/06 10:30:55 by sranaivo         ###   ########.fr       */
+/*   Updated: 2024/06/12 11:31:20 by sranaivo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "minitalk.h"
+#include "minitalk_bonus.h"
 
 volatile sig_atomic_t	g_sig_received = 0;
 
 static void	sig_received_handler(int signal)
 {
-	(void)signal;
-	g_sig_received = 1;
+	if (signal == SIGUSR1)
+	{
+		g_sig_received = 1;
+	}
+	else if (signal == SIGUSR2)
+	{
+		g_sig_received = 2;
+		ft_printf("\033[0;32m"
+			"Message received successfully 🔥\n"
+			"\033[0m");
+		exit(0);
+	}
 }
 
 static void	send_char(pid_t server_pid, char c)
