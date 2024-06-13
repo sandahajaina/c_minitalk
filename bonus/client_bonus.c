@@ -46,12 +46,11 @@ static void	send_char(pid_t server_pid, char c)
 				exit(1);
 			}
 		}
-		else
-			if (kill(server_pid, SIGUSR2) == -1)
-			{
-				ft_printf("Error\n");
-				exit(1);
-			}
+		else if (kill(server_pid, SIGUSR2) == -1)
+		{
+			ft_printf("Error\n");
+			exit(1);
+		}
 		while (g_sig_received != 1)
 			usleep(100);
 		bit--;
